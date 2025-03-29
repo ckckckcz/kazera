@@ -100,7 +100,7 @@ export function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4">
         <Card className={`${isVisible ? "slide-in" : "opacity-0"}`} style={{ animationDelay: "0.5s" }}>
           <CardHeader>
             <CardTitle>Upcoming Deadlines</CardTitle>
@@ -136,31 +136,6 @@ export function Dashboard() {
                 <p className="text-muted-foreground">No upcoming deadlines for the next 7 days</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <Card className={`${isVisible ? "slide-in" : "opacity-0"}`} style={{ animationDelay: "0.6s" }}>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <Button asChild>
-                <Link href="/dashboard/kanban">
-                  Go to Kanban Board <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/dashboard/courses">
-                  View Courses <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/dashboard/schedule">
-                  Check Schedule <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>

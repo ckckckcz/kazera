@@ -56,7 +56,7 @@ export function LandingPage() {
             </div>
             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
               <div className={`space-y-4 ${isVisible ? "slide-in" : "opacity-0"}`} style={{ animationDelay: "0.2s" }}>
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Powerful Features</div>
+                <div className="inline-block rounded-xl bg-muted px-3 py-1 text-sm">Powerful Features</div>
                 <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Everything you need in one place</h2>
                 <p className="text-muted-foreground md:text-lg">
                   Kazera combines the best of Monday.com and Notion to create a seamless project management experience.
@@ -88,7 +88,7 @@ export function LandingPage() {
                 className={`rounded-xl border bg-muted/50 p-2 ${isVisible ? "slide-in" : "opacity-0"}`}
                 style={{ animationDelay: "0.4s" }}
               >
-                <div className="overflow-hidden rounded-lg border bg-background">
+                <div className="overflow-hidden rounded-xl border bg-background">
                   <div className="bg-muted p-4">
                     <div className="flex items-center justify-between">
                       <div className="font-medium">Project planning</div>
@@ -143,7 +143,7 @@ export function LandingPage() {
           >
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-background px-3 py-1 text-sm">Get Started Today</div>
+                <div className="inline-block rounded-xl bg-background px-3 py-1 text-sm">Get Started Today</div>
                 <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Ready to transform your workflow?</h2>
                 <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                   Join thousands of teams already using Kazera to streamline their work.

@@ -16,26 +16,6 @@ const sidebarItems = [
     href: "/dashboard/kanban",
     icon: Trello,
   },
-  {
-    title: "Courses",
-    href: "/dashboard/courses",
-    icon: BookOpen,
-  },
-  {
-    title: "Schedule",
-    href: "/dashboard/schedule",
-    icon: Calendar,
-  },
-  {
-    title: "Grades",
-    href: "/dashboard/grades",
-    icon: GraduationCap,
-  },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
 ]
 
 export function Sidebar() {
@@ -51,7 +31,7 @@ export function Sidebar() {
                 key={index}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+                  "flex items-center gap-3 rounded-xl px-3 py-2 text-muted-foreground transition-all hover:text-primary",
                   pathname === item.href && "bg-muted text-primary font-semibold",
                 )}
               >

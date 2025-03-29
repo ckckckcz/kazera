@@ -100,7 +100,7 @@ export function KanbanBoard() {
               className={`${isVisible ? "slide-in" : "opacity-0"}`}
               style={{ animationDelay: "0.2s" }}
             >
-              <div className={`rounded-t-lg ${column.color} px-4 py-2 font-medium`}>
+              <div className={`rounded-xl  ${column.color} px-4 py-2 font-medium`}>
                 <div className="flex items-center justify-between">
                   <h3>{column.title}</h3>
                   <Badge variant="outline">{getColumnTasks(column.id).length}</Badge>
@@ -111,7 +111,7 @@ export function KanbanBoard() {
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="mt-2 space-y-3 kanban-column p-2"
+                    className="mt-5 space-y-3 kanban-column"
                   >
                     {getColumnTasks(column.id).map((task, index) => (
                       <Draggable key={task.id} draggableId={task.id} index={index}>
@@ -178,7 +178,7 @@ export function KanbanBoard() {
                     ))}
                     {provided.placeholder}
                     {getColumnTasks(column.id).length === 0 && (
-                      <div className="flex items-center justify-center h-24 border border-dashed rounded-lg">
+                      <div className="flex items-center justify-center h-24 border border-dashed rounded-xl">
                         <p className="text-sm text-muted-foreground">No assignments</p>
                       </div>
                     )}
