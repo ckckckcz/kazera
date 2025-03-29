@@ -87,7 +87,7 @@ export function KanbanBoard() {
           <h1 className="text-3xl font-bold tracking-tight">Assignment Board</h1>
           <p className="text-muted-foreground">Manage your school assignments with drag and drop</p>
         </div>
-        <Button onClick={handleAddTask}>
+        <Button onClick={handleAddTask} className="rounded-xl">
           <Plus className="mr-2 h-4 w-4" /> Add Assignment
         </Button>
       </div>

@@ -31,7 +31,7 @@ export function DashboardHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
+      <div className="px-7 py-10 flex h-14 items-center">
         <div className="md:hidden mr-2">
           <Sheet>
             <SheetTrigger asChild>
