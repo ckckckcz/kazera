@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BookOpen, Calendar, GraduationCap, LayoutDashboard, Settings, Trello } from "lucide-react"
+import { BookOpen, NotebookPen, GraduationCap, LayoutDashboard, Settings, Trello } from "lucide-react"
 
 const sidebarItems = [
   {
@@ -16,6 +16,12 @@ const sidebarItems = [
     title: "Kanban Board",
     href: "/dashboard/kanban",
     icon: Trello,
+    target: "",
+  },
+  {
+    title: "Note",
+    href: "/dashboard/note",
+    icon: NotebookPen,
     target: "",
   },
   {
