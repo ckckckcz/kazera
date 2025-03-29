@@ -16,26 +16,6 @@ const sidebarItems = [
     href: "/dashboard/kanban",
     icon: Trello,
   },
-  {
-    title: "Courses",
-    href: "/dashboard/courses",
-    icon: BookOpen,
-  },
-  {
-    title: "Schedule",
-    href: "/dashboard/schedule",
-    icon: Calendar,
-  },
-  {
-    title: "Grades",
-    href: "/dashboard/grades",
-    icon: GraduationCap,
-  },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
 ]
 
 export function MobileSidebar() {

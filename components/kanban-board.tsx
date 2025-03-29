@@ -111,7 +111,7 @@ export function KanbanBoard() {
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="mt-5 space-y-3 kanban-column"
+                    className="mt-5 space-y-3"
                   >
                     {getColumnTasks(column.id).map((task, index) => (
                       <Draggable key={task.id} draggableId={task.id} index={index}>

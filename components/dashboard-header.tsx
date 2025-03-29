@@ -31,7 +31,7 @@ export function DashboardHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="px-7 py-10 flex h-14 items-center">
+      <div className="lg:px-7 lg:py-10 px-4 flex h-14 items-center">
         <div className="md:hidden mr-2">
           <Sheet>
             <SheetTrigger asChild>
@@ -81,9 +81,6 @@ export function DashboardHeader() {
                   <p className="text-xs leading-none text-muted-foreground">student@example.com</p>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Log out</DropdownMenuItem>
             </DropdownMenuContent>

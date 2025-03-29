@@ -25,7 +25,7 @@ export function Sidebar() {
     <div className="hidden border-r bg-background md:block">
       <div className="flex h-full min-h-screen flex-col gap-2">
         <div className="flex-1 py-4">
-          <nav className="grid items-start px-4 text-sm font-medium">
+          <nav className="grid items-start px-4 text-md font-medium gap-3">
             {sidebarItems.map((item, index) => (
               <Link
                 key={index}
