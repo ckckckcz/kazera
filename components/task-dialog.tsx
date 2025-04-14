@@ -54,25 +54,25 @@ interface TaskDialogProps {
 }
 
 export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialogProps) {
-  const [files, setFiles] = useState<File[]>(task?.files || [])
-  const [fileUrls, setFileUrls] = useState<string[]>(task?.fileUrls || [])
+  const [files, setFiles] = useState<File[]>([])
+  const [fileUrls, setFileUrls] = useState<string[]>([])
 
   const form = useForm<FormTask>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      id: task?.id || crypto.randomUUID(),
-      title: task?.title || "",
-      description: task?.description || "",
-      status: (task?.status || "todo") as "todo" | "in-progress" | "done",
-      deadline: task?.deadline || new Date().toISOString().split("T")[0],
-      link: task?.link || "",
-      files: task?.files || [],
-      fileUrls: task?.fileUrls || [],
+      id: crypto.randomUUID(),
+      title: "",
+      description: "",
+      status: "todo",
+      deadline: new Date().toISOString().split("T")[0],
+      link: "",
+      files: [],
+      fileUrls: [],
     },
     mode: "onChange",
   })
 
-  // Update form when task changes
+  // Update form when task changes or dialog opens
   useEffect(() => {
     if (task) {
       form.reset({
@@ -88,6 +88,7 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
       setFiles(task.files || [])
       setFileUrls(task.fileUrls || [])
     } else {
+      // Reset form for new task
       form.reset({
         id: crypto.randomUUID(),
         title: "",
@@ -101,7 +102,7 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
       setFiles([])
       setFileUrls([])
     }
-  }, [task, form])
+  }, [task, form, open]) // Added open as a dependency to reset when dialog opens
 
   function onSubmit(values: FormTask) {
     // Combine form values with file data
@@ -111,6 +112,8 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
       fileUrls: fileUrls,
       description: values.description || "",
     }
+
+    console.log("Submitting task:", taskData)
 
     if (onSave) {
       onSave(taskData)
@@ -126,11 +129,16 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
     setOpen(false)
   }
 
+  // Handle file upload changes
+  const handleFileChange = (newFiles: File[], newUrls: string[]) => {
+    setFiles(newFiles)
+    setFileUrls(newUrls)
+    form.setValue("files", newFiles)
+    form.setValue("fileUrls", newUrls)
+  }
+
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline">Open</Button>
-      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{task ? "Edit Task" : "Create Task"}</AlertDialogTitle>
@@ -174,7 +182,7 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a status" />
@@ -239,14 +247,7 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
             />
             <div className="space-y-2 mb-4">
               <Label htmlFor="files">Attachments</Label>
-              <FileUpload
-                files={files}
-                fileUrls={fileUrls}
-                onChange={(newFiles, newUrls) => {
-                  setFiles(newFiles)
-                  setFileUrls(newUrls)
-                }}
-              />
+              <FileUpload files={files} fileUrls={fileUrls} onChange={handleFileChange} />
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>

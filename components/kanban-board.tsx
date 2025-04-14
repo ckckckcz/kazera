@@ -126,16 +126,19 @@ export function KanbanBoard() {
   }, [])
 
   const handleAddTask = () => {
-    setCurrentTask(null)
-    setIsDialogOpen(true)
+    console.log("Add task button clicked")
+    setCurrentTask(null) // Reset current task to null for a new task
+    setIsDialogOpen(true) // Open the dialog
   }
 
   const handleEditTask = (task: Task) => {
+    console.log("Edit task:", task)
     setCurrentTask(task)
     setIsDialogOpen(true)
   }
 
   const handleDeleteTask = (taskId: string) => {
+    console.log("Delete task:", taskId)
     deleteTask(taskId)
   }
 
@@ -161,10 +164,22 @@ export function KanbanBoard() {
   }
 
   const handleSaveTask = (task: Task) => {
-    if (task.id && tasks.some((t) => t.id === task.id)) {
-      updateTask(task)
+    console.log("Saving task:", task)
+
+    // Ensure task has all required properties
+    const completeTask: Task = {
+      ...task,
+      description: task.description || "",
+      files: task.files || [],
+      fileUrls: task.fileUrls || [],
+    }
+
+    if (tasks.some((t) => t.id === task.id)) {
+      console.log("Updating existing task")
+      updateTask(completeTask)
     } else {
-      addTask(task)
+      console.log("Adding new task")
+      addTask(completeTask)
     }
   }
 
@@ -292,6 +307,14 @@ export function KanbanBoard() {
           </div>
         </div>
       </DragDropContext>
+
+      <TaskDialog
+        open={isDialogOpen}
+        setOpen={setIsDialogOpen}
+        task={currentTask}
+        onSave={handleSaveTask}
+        onDelete={handleDeleteTask}
+      />
     </div>
   )
 }
