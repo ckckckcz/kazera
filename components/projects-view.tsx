@@ -104,7 +104,7 @@ function ProjectCard({ project }) {
           </DropdownMenu>
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
+      <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
           <span className="text-sm text-muted-foreground">Due {project.dueDate}</span>

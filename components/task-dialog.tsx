@@ -1,199 +1,288 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { FileUpload } from "@/components/file-upload"
 import { useTaskStore } from "@/lib/task-store"
 import type { Task } from "@/lib/types"
-import { CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+
+const taskSchema = z.object({
+  id: z.string(),
+  title: z.string().min(2, {
+    message: "Title must be at least 2 characters.",
+  }),
+  description: z.string().default(""),
+  status: z.enum(["todo", "in-progress", "done"]),
+  deadline: z.string(),
+  link: z.string().optional(),
+  files: z.array(z.any()).optional(),
+  fileUrls: z.array(z.string()).optional(),
+})
+
+type FormTask = z.infer<typeof taskSchema>
 
 interface TaskDialogProps {
   open: boolean
   setOpen: (open: boolean) => void
-  task: Task | null
+  task?: Task | null
+  onSave?: (task: Task) => void
+  onDelete?: (id: string) => void
 }
 
-export function TaskDialog({ open, setOpen, task }: TaskDialogProps) {
-  const { addTask, updateTask } = useTaskStore()
+export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialogProps) {
+  const [files, setFiles] = useState<File[]>(task?.files || [])
+  const [fileUrls, setFileUrls] = useState<string[]>(task?.fileUrls || [])
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [status, setStatus] = useState("todo")
-  const [deadline, setDeadline] = useState<Date>(new Date())
-  const [link, setLink] = useState("")
-  const [errors, setErrors] = useState({
-    title: false,
-    deadline: false,
+  const form = useForm<FormTask>({
+    resolver: zodResolver(taskSchema),
+    defaultValues: {
+      id: task?.id || crypto.randomUUID(),
+      title: task?.title || "",
+      description: task?.description || "",
+      status: (task?.status || "todo") as "todo" | "in-progress" | "done",
+      deadline: task?.deadline || new Date().toISOString().split("T")[0],
+      link: task?.link || "",
+      files: task?.files || [],
+      fileUrls: task?.fileUrls || [],
+    },
+    mode: "onChange",
   })
 
+  // Update form when task changes
   useEffect(() => {
     if (task) {
-      setTitle(task.title)
-      setDescription(task.description || "")
-      setStatus(task.status)
-      setDeadline(new Date(task.deadline))
-      setLink(task.link || "")
+      form.reset({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        deadline: task.deadline,
+        link: task.link || "",
+        files: task.files || [],
+        fileUrls: task.fileUrls || [],
+      })
+      setFiles(task.files || [])
+      setFileUrls(task.fileUrls || [])
     } else {
-      resetForm()
+      form.reset({
+        id: crypto.randomUUID(),
+        title: "",
+        description: "",
+        status: "todo",
+        deadline: new Date().toISOString().split("T")[0],
+        link: "",
+        files: [],
+        fileUrls: [],
+      })
+      setFiles([])
+      setFileUrls([])
     }
-  }, [task, open])
+  }, [task, form])
 
-  const resetForm = () => {
-    setTitle("")
-    setDescription("")
-    setStatus("todo")
-    setDeadline(new Date())
-    setLink("")
-    setErrors({ title: false, deadline: false })
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // Validate form
-    const newErrors = {
-      title: title.trim() === "",
-      deadline: !deadline,
-    }
-
-    setErrors(newErrors)
-
-    if (newErrors.title || newErrors.deadline) {
-      return
+  function onSubmit(values: FormTask) {
+    // Combine form values with file data
+    const taskData: Task = {
+      ...values,
+      files: files,
+      fileUrls: fileUrls,
+      description: values.description || "",
     }
 
-    const taskData = {
-      title,
-      description,
-      status,
-      deadline: deadline.toISOString(),
-      link: link.trim() !== "" ? link : undefined,
-    }
-
-    if (task) {
-      updateTask(task.id, taskData)
+    if (onSave) {
+      onSave(taskData)
     } else {
-      addTask(taskData)
+      // Fallback implementation using the task store directly
+      const { addTask, updateTask } = useTaskStore.getState()
+      if (taskData.id && task?.id) {
+        updateTask(taskData)
+      } else {
+        addTask(taskData)
+      }
     }
-
     setOpen(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>{task ? "Edit Assignment" : "Add New Assignment"}</DialogTitle>
-            <DialogDescription>
-              {task ? "Update the details of your assignment." : "Fill in the details for your new assignment."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title" className={errors.title ? "text-destructive" : ""}>
-                Title {errors.title && <span className="text-destructive">*</span>}
-              </Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={errors.title ? "border-destructive" : ""}
-                placeholder="e.g., Math Homework"
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button variant="outline">Open</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{task ? "Edit Task" : "Create Task"}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {task
+              ? "Edit your task here. Click save when you're done."
+              : "Create a new task here. Click save when you're done."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Task Title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Task Description" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="todo">Todo</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="done">Done</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="deadline"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Deadline</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[240px] pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value ? new Date(field.value) : undefined}
+                        onSelect={(date) => field.onChange(date?.toISOString().split("T")[0] || "")}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="link"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Link</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Task Link" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="space-y-2 mb-4">
+              <Label htmlFor="files">Attachments</Label>
+              <FileUpload
+                files={files}
+                fileUrls={fileUrls}
+                onChange={(newFiles, newUrls) => {
+                  setFiles(newFiles)
+                  setFileUrls(newUrls)
+                }}
               />
-              {errors.title && <p className="text-xs text-destructive">Title is required</p>}
             </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="e.g., Complete problems 1-10 from Chapter 5"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="deadline" className={errors.deadline ? "text-destructive" : ""}>
-                Deadline {errors.deadline && <span className="text-destructive">*</span>}
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !deadline && "text-muted-foreground",
-                      errors.deadline && "border-destructive",
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {deadline ? format(deadline, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={deadline}
-                    onSelect={(date) => date && setDeadline(date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              {errors.deadline && <p className="text-xs text-destructive">Deadline is required</p>}
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="link">Submission/Reference Link</Label>
-              <Input
-                id="link"
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="e.g., https://classroom.google.com/..."
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit">{task ? "Update" : "Create"}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              {task && onDelete ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">Delete</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your task from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          if (task?.id) {
+                            onDelete(task.id)
+                            setOpen(false)
+                          }
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : null}
+              <Button type="submit">Save</Button>
+            </AlertDialogFooter>
+          </form>
+        </Form>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
-
