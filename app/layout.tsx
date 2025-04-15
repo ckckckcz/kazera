@@ -9,7 +9,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Kazera | School Assignment Manager",
   description: "A personalized project management tool for school assignments",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
