@@ -223,7 +223,7 @@ export default function LoginForm() {
                             <Separator className="w-full" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className=" px-2 text-gray-500 bg-  ">
+                            <span className=" px-2 text-gray-500 bg-gray-950 ">
                             Or continue with
                             </span>
                         </div>
