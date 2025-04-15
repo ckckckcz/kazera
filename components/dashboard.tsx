@@ -55,55 +55,79 @@ export function Dashboard() {
         <p className="text-muted-foreground">Welcome back! Here's an overview of your assignments.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className={`${isVisible ? "slide-in" : "opacity-0"}`} style={{ animationDelay: "0.1s" }}>
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <Card
+          className="relative overflow-hidden transition-all duration-300 hover:shadow-md"
+          style={{ animationDelay: "0.1s" }}
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary/70" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Assignments</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium tracking-tight">Total Assignments</CardTitle>
+            <div className="rounded-full bg-primary/10 p-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalTasks}</div>
-            <div className="mt-2">
+            <div className="text-3xl font-bold tracking-tight">{totalTasks}</div>
+            <div className="mt-3 space-y-2">
               <Progress value={completionPercentage} className="h-2" />
+              <p className="text-xs text-muted-foreground">{completionPercentage}% complete</p>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">{completionPercentage}% complete</p>
           </CardContent>
         </Card>
 
-        <Card className={`${isVisible ? "slide-in" : "opacity-0"}`} style={{ animationDelay: "0.2s" }}>
+        <Card
+          className="relative overflow-hidden transition-all duration-300 hover:shadow-md"
+          style={{ animationDelay: "0.2s" }}
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-amber-500/70" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">To Do</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium tracking-tight">To Do</CardTitle>
+            <div className="rounded-full bg-amber-500/10 p-2">
+              <Clock className="h-4 w-4 text-amber-500" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todoTasks}</div>
-            <p className="text-xs text-muted-foreground mt-2">
+            <div className="text-3xl font-bold tracking-tight">{todoTasks}</div>
+            <p className="mt-3 text-xs text-muted-foreground">
               {todoTasks > 0 ? "Assignments waiting to be started" : "No pending assignments"}
             </p>
           </CardContent>
         </Card>
 
-        <Card className={`${isVisible ? "slide-in" : "opacity-0"}`} style={{ animationDelay: "0.3s" }}>
+        <Card
+          className="relative overflow-hidden transition-all duration-300 hover:shadow-md"
+          style={{ animationDelay: "0.3s" }}
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-violet-500/70" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Trello className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium tracking-tight">In Progress</CardTitle>
+            <div className="rounded-full bg-violet-500/10 p-2">
+              <Trello className="h-4 w-4 text-violet-500" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressTasks}</div>
-            <p className="text-xs text-muted-foreground mt-2">
+            <div className="text-3xl font-bold tracking-tight">{inProgressTasks}</div>
+            <p className="mt-3 text-xs text-muted-foreground">
               {inProgressTasks > 0 ? "Assignments currently in progress" : "No assignments in progress"}
             </p>
           </CardContent>
         </Card>
 
-        <Card className={`${isVisible ? "slide-in" : "opacity-0"}`} style={{ animationDelay: "0.4s" }}>
+        <Card
+          className="relative overflow-hidden transition-all duration-300 hover:shadow-md"
+          style={{ animationDelay: "0.4s" }}
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-green-500/70" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium tracking-tight">Completed</CardTitle>
+            <div className="rounded-full bg-green-500/10 p-2">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedTasks}</div>
-            <p className="text-xs text-muted-foreground mt-2">
+            <div className="text-3xl font-bold tracking-tight">{completedTasks}</div>
+            <p className="mt-3 text-xs text-muted-foreground">
               {completedTasks > 0 ? "Assignments completed" : "No completed assignments yet"}
             </p>
           </CardContent>
