@@ -1,20 +1,30 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, BookOpen, CheckCircle, Clock, Trello } from "lucide-react"
 import Link from "next/link"
 import { useTaskStore } from "@/lib/task-store"
 import { Progress } from "@/components/ui/progress"
+import { useUser } from "@/context/UserContext"
 
 export function Dashboard() {
   const [isVisible, setIsVisible] = useState(false)
   const { tasks } = useTaskStore()
+  const { user } = useUser()
+  const router = useRouter()
 
   useEffect(() => {
     setIsVisible(true)
   }, [])
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth/login");
+    }
+  }, [user, router]);
 
   // Calculate task statistics
   const totalTasks = tasks.length
