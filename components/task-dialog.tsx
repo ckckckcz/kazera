@@ -30,6 +30,7 @@ import { FileUpload } from "@/components/file-upload"
 import { useTaskStore } from "@/lib/task-store"
 import type { Task } from "@/lib/types"
 
+// Define a more flexible schema for files
 const taskSchema = z.object({
   id: z.string(),
   title: z.string().min(2, {
@@ -39,7 +40,7 @@ const taskSchema = z.object({
   status: z.enum(["todo", "in-progress", "done"]),
   deadline: z.string(),
   link: z.string().optional(),
-  files: z.array(z.any()).optional(),
+  files: z.any().optional(),
   fileUrls: z.array(z.string()).optional(),
 })
 
@@ -57,84 +58,93 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
   const [files, setFiles] = useState<File[]>([])
   const [fileUrls, setFileUrls] = useState<string[]>([])
 
+  // Create a default form state
+  const defaultFormValues = {
+    id: crypto.randomUUID(),
+    title: "",
+    description: "",
+    status: "todo" as const,
+    deadline: new Date().toISOString().split("T")[0],
+    link: "",
+  }
+
   const form = useForm<FormTask>({
     resolver: zodResolver(taskSchema),
-    defaultValues: {
-      id: crypto.randomUUID(),
-      title: "",
-      description: "",
-      status: "todo",
-      deadline: new Date().toISOString().split("T")[0],
-      link: "",
-      files: [],
-      fileUrls: [],
-    },
+    defaultValues: defaultFormValues,
     mode: "onChange",
   })
 
-  // Update form when task changes or dialog opens
+  // Reset form when dialog opens/closes or task changes
   useEffect(() => {
-    if (task) {
-      form.reset({
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        deadline: task.deadline,
-        link: task.link || "",
-        files: task.files || [],
-        fileUrls: task.fileUrls || [],
-      })
-      setFiles(task.files || [])
-      setFileUrls(task.fileUrls || [])
-    } else {
-      // Reset form for new task
-      form.reset({
-        id: crypto.randomUUID(),
-        title: "",
-        description: "",
-        status: "todo",
-        deadline: new Date().toISOString().split("T")[0],
-        link: "",
-        files: [],
-        fileUrls: [],
-      })
+    try {
+      if (open) {
+        if (task) {
+          // Edit existing task
+          form.reset({
+            id: task.id || crypto.randomUUID(),
+            title: task.title || "",
+            description: task.description || "",
+            status: task.status || "todo",
+            deadline: task.deadline || new Date().toISOString().split("T")[0],
+            link: task.link || "",
+          })
+
+          // Handle files separately to avoid serialization issues
+          setFiles(task.files || [])
+          setFileUrls(task.fileUrls || [])
+        } else {
+          // Create new task
+          form.reset(defaultFormValues)
+          setFiles([])
+          setFileUrls([])
+        }
+      }
+    } catch (error) {
+      console.error("Error resetting form:", error)
+      // Fallback to default values
+      form.reset(defaultFormValues)
       setFiles([])
       setFileUrls([])
     }
-  }, [task, form, open]) // Added open as a dependency to reset when dialog opens
+  }, [task, form, open])
 
   function onSubmit(values: FormTask) {
-    // Combine form values with file data
-    const taskData: Task = {
-      ...values,
-      files: files,
-      fileUrls: fileUrls,
-      description: values.description || "",
-    }
-
-    console.log("Submitting task:", taskData)
-
-    if (onSave) {
-      onSave(taskData)
-    } else {
-      // Fallback implementation using the task store directly
-      const { addTask, updateTask } = useTaskStore.getState()
-      if (taskData.id && task?.id) {
-        updateTask(taskData)
-      } else {
-        addTask(taskData)
+    try {
+      // Combine form values with file data
+      const taskData: Task = {
+        ...values,
+        files: files || [],
+        fileUrls: fileUrls || [],
+        description: values.description || "",
       }
+
+      console.log("Submitting task:", taskData)
+
+      if (onSave) {
+        onSave(taskData)
+      } else {
+        // Fallback implementation using the task store directly
+        const { addTask, updateTask } = useTaskStore.getState()
+        if (taskData.id && task?.id) {
+          updateTask(taskData)
+        } else {
+          addTask(taskData)
+        }
+      }
+      setOpen(false)
+    } catch (error) {
+      console.error("Error submitting form:", error)
     }
-    setOpen(false)
   }
 
   // Handle file upload changes
   const handleFileChange = (newFiles: File[], newUrls: string[]) => {
-    setFiles(newFiles)
-    setFileUrls(newUrls)
-    form.setValue("files", newFiles)
-    form.setValue("fileUrls", newUrls)
+    try {
+      setFiles(newFiles)
+      setFileUrls(newUrls)
+    } catch (error) {
+      console.error("Error handling file change:", error)
+    }
   }
 
   return (
@@ -170,7 +180,7 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Task Description" {...field} />
+                    <Textarea placeholder="Task Description" {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -182,7 +192,7 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a status" />
@@ -239,7 +249,7 @@ export function TaskDialog({ open, setOpen, task, onSave, onDelete }: TaskDialog
                 <FormItem>
                   <FormLabel>Link</FormLabel>
                   <FormControl>
-                    <Input placeholder="Task Link" {...field} />
+                    <Input placeholder="Task Link" {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

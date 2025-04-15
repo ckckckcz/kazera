@@ -8,20 +8,20 @@ import { Button } from "@/components/ui/button"
 import { FilePreview } from "@/components/file-preview"
 
 interface FileUploadProps {
-  files: File[]
+  files: (File | { name: string; type: string })[]
   fileUrls: string[]
   onChange: (files: File[], urls: string[]) => void
   maxFiles?: number
 }
 
-export function FileUpload({ files, fileUrls, onChange, maxFiles = 10 }: FileUploadProps) {
+export function FileUpload({ files = [], fileUrls = [], onChange, maxFiles = 10 }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files)
-      const totalFiles = [...files, ...newFiles]
+      const totalFiles = [...(files.filter((f) => f instanceof File) as File[]), ...newFiles]
 
       if (totalFiles.length > maxFiles) {
         alert(`You can only upload a maximum of ${maxFiles} files.`)
@@ -29,7 +29,7 @@ export function FileUpload({ files, fileUrls, onChange, maxFiles = 10 }: FileUpl
       }
 
       const newUrls = newFiles.map((file) => URL.createObjectURL(file))
-      onChange([...files, ...newFiles], [...fileUrls, ...newUrls])
+      onChange([...totalFiles], [...fileUrls, ...newUrls])
     }
   }
 
@@ -48,7 +48,7 @@ export function FileUpload({ files, fileUrls, onChange, maxFiles = 10 }: FileUpl
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const newFiles = Array.from(e.dataTransfer.files)
-      const totalFiles = [...files, ...newFiles]
+      const totalFiles = [...(files.filter((f) => f instanceof File) as File[]), ...newFiles]
 
       if (totalFiles.length > maxFiles) {
         alert(`You can only upload a maximum of ${maxFiles} files.`)
@@ -56,21 +56,27 @@ export function FileUpload({ files, fileUrls, onChange, maxFiles = 10 }: FileUpl
       }
 
       const newUrls = newFiles.map((file) => URL.createObjectURL(file))
-      onChange([...files, ...newFiles], [...fileUrls, ...newUrls])
+      onChange([...totalFiles], [...fileUrls, ...newUrls])
     }
   }
 
   const removeFile = (index: number) => {
-    const newFiles = [...files]
-    const newUrls = [...fileUrls]
+    try {
+      const newFiles = [...files]
+      const newUrls = [...fileUrls]
 
-    // Revoke the object URL to avoid memory leaks
-    URL.revokeObjectURL(newUrls[index])
+      // Revoke the object URL to avoid memory leaks
+      if (newUrls[index]) {
+        URL.revokeObjectURL(newUrls[index])
+      }
 
-    newFiles.splice(index, 1)
-    newUrls.splice(index, 1)
+      newFiles.splice(index, 1)
+      newUrls.splice(index, 1)
 
-    onChange(newFiles, newUrls)
+      onChange(newFiles.filter((f) => f instanceof File) as File[], newUrls)
+    } catch (error) {
+      console.error("Error removing file:", error)
+    }
   }
 
   return (
@@ -99,10 +105,15 @@ export function FileUpload({ files, fileUrls, onChange, maxFiles = 10 }: FileUpl
         <p className="text-xs text-muted-foreground">Supported formats: PDF, Word, Excel, and images</p>
       </div>
 
-      {files.length > 0 && (
+      {files && files.length > 0 && (
         <div className="grid grid-cols-1 gap-2 mt-3">
           {files.map((file, index) => (
-            <FilePreview key={index} file={file} url={fileUrls[index]} onRemove={() => removeFile(index)} />
+            <FilePreview
+              key={index}
+              file={file}
+              url={fileUrls && index < fileUrls.length ? fileUrls[index] : ""}
+              onRemove={() => removeFile(index)}
+            />
           ))}
         </div>
       )}

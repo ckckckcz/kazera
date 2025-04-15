@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { generateId } from "./utils"
-import type { Task } from "./types"
+import type { Task } from "@/lib/types"
 
 interface TaskState {
   tasks: Task[]
@@ -16,45 +16,78 @@ export const useTaskStore = create<TaskState>()(
     (set, get) => ({
       tasks: [],
       addTask: (task) => {
-        console.log("Adding task to store:", task)
-        const newTask: Task = {
-          id: task.id || generateId(),
-          title: task.title,
-          description: task.description || "",
-          status: (task.status || "todo") as Task["status"],
-          deadline: task.deadline || new Date().toISOString().split("T")[0],
-          link: task.link,
-          files: task.files || [],
-          fileUrls: task.fileUrls || [],
-        }
+        try {
+          console.log("Adding task to store:", task)
+          const newTask: Task = {
+            id: task.id || generateId(),
+            title: task.title,
+            description: task.description || "",
+            status: (task.status || "todo") as Task["status"],
+            deadline: task.deadline || new Date().toISOString().split("T")[0],
+            link: task.link,
+            files: task.files || [],
+            fileUrls: task.fileUrls || [],
+          }
 
-        set((state) => ({
-          tasks: [...state.tasks, newTask],
-        }))
+          set((state) => ({
+            tasks: [...state.tasks, newTask],
+          }))
+        } catch (error) {
+          console.error("Error adding task:", error)
+        }
       },
       deleteTask: (id: string) => {
-        console.log("Deleting task from store:", id)
-        set((state) => ({
-          tasks: state.tasks.filter((task) => task.id !== id),
-        }))
+        try {
+          console.log("Deleting task from store:", id)
+          set((state) => ({
+            tasks: state.tasks.filter((task) => task.id !== id),
+          }))
+        } catch (error) {
+          console.error("Error deleting task:", error)
+        }
       },
       updateTask: (updatedTask: Task) => {
-        console.log("Updating task in store:", updatedTask)
-        set((state) => ({
-          tasks: state.tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
-        }))
+        try {
+          console.log("Updating task in store:", updatedTask)
+          set((state) => ({
+            tasks: state.tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+          }))
+        } catch (error) {
+          console.error("Error updating task:", error)
+        }
       },
       moveTask: (taskId: string, newStatus: string) => {
-        console.log("Moving task in store:", taskId, "to", newStatus)
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === taskId ? { ...task, status: newStatus as Task["status"] } : task,
-          ),
-        }))
+        try {
+          console.log("Moving task in store:", taskId, "to", newStatus)
+          set((state) => ({
+            tasks: state.tasks.map((task) =>
+              task.id === taskId ? { ...task, status: newStatus as Task["status"] } : task,
+            ),
+          }))
+        } catch (error) {
+          console.error("Error moving task:", error)
+        }
       },
     }),
     {
       name: "task-store",
+      // Fix serialization issues with File objects
+      serialize: (state) => {
+        // Create a serializable version of the state
+        const serializableState = {
+          ...state,
+          state: {
+            ...state.state,
+            tasks: state.state.tasks.map((task) => ({
+              ...task,
+              // Convert File objects to simple objects with name and type
+              files:
+                task.files?.map((file) => (file instanceof File ? { name: file.name, type: file.type } : file)) || [],
+            })),
+          },
+        }
+        return JSON.stringify(serializableState)
+      },
     },
   ),
 )

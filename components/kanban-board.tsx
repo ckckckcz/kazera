@@ -126,60 +126,95 @@ export function KanbanBoard() {
   }, [])
 
   const handleAddTask = () => {
-    console.log("Add task button clicked")
-    setCurrentTask(null) // Reset current task to null for a new task
-    setIsDialogOpen(true) // Open the dialog
+    try {
+      console.log("Add task button clicked")
+      setCurrentTask(null) // Reset current task to null for a new task
+      setIsDialogOpen(true) // Open the dialog
+    } catch (error) {
+      console.error("Error in handleAddTask:", error)
+    }
   }
 
   const handleEditTask = (task: Task) => {
-    console.log("Edit task:", task)
-    setCurrentTask(task)
-    setIsDialogOpen(true)
+    try {
+      console.log("Edit task:", task)
+      setCurrentTask({ ...task }) // Create a copy to avoid reference issues
+      setIsDialogOpen(true)
+    } catch (error) {
+      console.error("Error in handleEditTask:", error)
+    }
   }
 
   const handleDeleteTask = (taskId: string) => {
-    console.log("Delete task:", taskId)
-    deleteTask(taskId)
+    try {
+      console.log("Delete task:", taskId)
+      deleteTask(taskId)
+    } catch (error) {
+      console.error("Error in handleDeleteTask:", error)
+    }
   }
 
   const getColumnTasks = (columnId: string) => {
-    return tasks.filter((task) => task.status === columnId)
+    try {
+      return tasks.filter((task) => task.status === columnId)
+    } catch (error) {
+      console.error("Error in getColumnTasks:", error)
+      return []
+    }
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    } catch (error) {
+      console.error("Error formatting date:", error)
+      return "Invalid date"
+    }
   }
 
   const isOverdue = (deadline: string) => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const deadlineDate = new Date(deadline)
-    deadlineDate.setHours(0, 0, 0, 0)
-    return deadlineDate < today
+    try {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const deadlineDate = new Date(deadline)
+      deadlineDate.setHours(0, 0, 0, 0)
+      return deadlineDate < today
+    } catch (error) {
+      console.error("Error checking if overdue:", error)
+      return false
+    }
   }
 
   const handleSaveTask = (task: Task) => {
-    console.log("Saving task:", task)
+    try {
+      console.log("Saving task:", task)
 
-    // Ensure task has all required properties
-    const completeTask: Task = {
-      ...task,
-      description: task.description || "",
-      files: task.files || [],
-      fileUrls: task.fileUrls || [],
-    }
+      // Ensure task has all required properties
+      const completeTask: Task = {
+        id: task.id || crypto.randomUUID(),
+        title: task.title || "",
+        description: task.description || "",
+        status: task.status || "todo",
+        deadline: task.deadline || new Date().toISOString().split("T")[0],
+        link: task.link,
+        files: task.files || [],
+        fileUrls: task.fileUrls || [],
+      }
 
-    if (tasks.some((t) => t.id === task.id)) {
-      console.log("Updating existing task")
-      updateTask(completeTask)
-    } else {
-      console.log("Adding new task")
-      addTask(completeTask)
+      if (tasks.some((t) => t.id === task.id)) {
+        console.log("Updating existing task")
+        updateTask(completeTask)
+      } else {
+        console.log("Adding new task")
+        addTask(completeTask)
+      }
+    } catch (error) {
+      console.error("Error in handleSaveTask:", error)
     }
   }
 
@@ -247,7 +282,7 @@ export function KanbanBoard() {
                                     </DropdownMenu>
                                   </div>
 
-                                  <p className="text-sm text-muted-foreground mt-2 mb-3">{task.description}</p>
+                                  <p className="text-sm text-muted-foreground mt-2 mb-3">{task.description || ""}</p>
 
                                   <div className="flex items-center text-sm text-muted-foreground mt-4">
                                     <CalendarIcon className="mr-1 h-3.5 w-3.5" />
@@ -280,7 +315,9 @@ export function KanbanBoard() {
                                           <FilePreview
                                             key={index}
                                             file={file}
-                                            url={task.fileUrls?.[index] || ""}
+                                            url={
+                                              task.fileUrls && index < task.fileUrls.length ? task.fileUrls[index] : ""
+                                            }
                                             showRemoveButton={false}
                                           />
                                         ))}
